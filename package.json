@@ -8,9 +8,9 @@
   },
   "scripts": {
     "kovan": "truffle migrate --network kovan --reset",
-    "verifykovan": "truffle run verify PAYR --network kovan",
+    "verifykovan": "truffle run verify PAYR Crowdsale Presale --network kovan",
     "mainnet": "truffle migrate --network main --reset",
-    "verify": "truffle run verify PAYR --network main",
+    "verify": "truffle run verify PAYR Crowdsale Presale --network main",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": "https://github.com/payrlinks/payrlinks-contracts",
