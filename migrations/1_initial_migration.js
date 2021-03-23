@@ -9,7 +9,7 @@ var Presale = artifacts.require("../contracts/Presale.sol");
 
 const configs = require("../config.json");
 
-module.exports = function(deployer) {
+module.exports = async function(deployer) {
   try {
     let dataParse = {};
 
@@ -40,6 +40,7 @@ module.exports = function(deployer) {
       await deployer.deploy(PAYR, {
         gas: 5000000
       });
+      await PAYR.deployed();
       dataParse['PAYR'] = PAYR.address;
     }
     else {

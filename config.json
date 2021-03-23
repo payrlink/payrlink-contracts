@@ -1,1 +1,13 @@
-{}
+{
+    "farm_param": {
+        "rewardPerBlock": "7600000000000000000",
+        "delay": 30,
+        "fund": "80000000000000000000000000",
+        "lp": [
+            {
+                "address": "0x856e90282961c0e7f6693fd2f62b35d5df9783cf",
+                "allocPoint": 100
+            }
+        ]
+    }
+}
