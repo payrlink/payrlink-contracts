@@ -24,10 +24,10 @@ module.exports = async function(deployer) {
       if (configs.farm_param.fund) {
         const payrInstance = await PAYR.at(dataParse['PAYR']);
         await payrInstance.approve(Farm.address, web3.utils.toBN(configs.farm_param.fund));
-        farmInstance.fund(web3.utils.toBN(configs.farm_param.fund));
+        await farmInstance.fund(web3.utils.toBN(configs.farm_param.fund));
       }
 
-      configs.farm_param.lp.forEach((token) => {
+      configs.farm_param.lp.forEach(async (token) => {
         if (token.address) {
           await farmInstance.add(
             token.allocPoint,

@@ -8,15 +8,16 @@
   },
   "scripts": {
     "kovan": "truffle migrate --network kovan --reset",
-    "verifykovan": "truffle run verify PAYR Crowdsale Presale --network kovan",
+    "verifykovan": "truffle run verify PAYR Crowdsale Presale Farm --network kovan",
     "mainnet": "truffle migrate --network main --reset",
-    "verify": "truffle run verify PAYR Crowdsale Presale --network main",
+    "verify": "truffle run verify PAYR Crowdsale Presale Farm --network main",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": "https://github.com/payrlinks/payrlinks-contracts",
   "author": "Peter Park <peter.park13ak@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "@openzeppelin/contracts": "^4.0.0",
     "@truffle/hdwallet-provider": "^1.2.1",
     "dotenv": "^5.0.1",
     "fs": "0.0.1-security",

@@ -3,7 +3,7 @@
 pragma solidity ^0.8.0;
 
 import "./interfaces/IPAYR.sol";
-import "./library/Ownable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract PAYR is Ownable, IPAYR {
     mapping (address => uint256) private _balances;

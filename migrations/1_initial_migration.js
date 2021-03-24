@@ -1,8 +1,5 @@
 var fs = require('fs');
 
-var Ownable = artifacts.require("../contracts/library/Ownable.sol");
-var SafeMath = artifacts.require("../contracts/library/SafeMath.sol");
-var ReentrancyGuard = artifacts.require("../contracts/library/ReentrancyGuard.sol");
 var PAYR = artifacts.require("../contracts/PAYR.sol");
 var Crowdsale = artifacts.require("../contracts/Crowdsale.sol");
 var Presale = artifacts.require("../contracts/Presale.sol");
@@ -18,30 +15,13 @@ module.exports = async function(deployer) {
     const startOfICO = Math.floor(Date.UTC(2021, 3, 3, 0, 0, 0) / 1000);
     const endOfICO = Math.floor(Date.UTC(2021, 3, 7, 0, 0, 0) / 1000);
 
-    await deployer.deploy(Ownable, {
-      gas: 1000000
-    });
-    await deployer.link(Ownable, [PAYR, Presale, Crowdsale]);
-    dataParse['Ownable'] = Ownable.address;
-  
-    await deployer.deploy(SafeMath, {
-      gas: 1000000
-    });
-    await deployer.link(SafeMath, [Presale, Crowdsale]);
-    dataParse['SafeMath'] = SafeMath.address;
-  
-    await deployer.deploy(ReentrancyGuard, {
-      gas: 1000000
-    });
-    await deployer.link(ReentrancyGuard, [Presale, Crowdsale]);
-    dataParse['ReentrancyGuard'] = ReentrancyGuard.address;
-  
     if (!configs.PAYR) {
       await deployer.deploy(PAYR, {
         gas: 5000000
       });
-      await PAYR.deployed();
+      let payrInstance = await PAYR.deployed();
       dataParse['PAYR'] = PAYR.address;
+      await payrInstance.mint(configs.owner, web3.utils.toBN(configs.mint));
     }
     else {
       dataParse['PAYR'] = configs.PAYR;

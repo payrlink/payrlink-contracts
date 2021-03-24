@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.0;
 
+import "./interfaces/IPAYR.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
-import "@openzeppelin/contracts/utils/EnumerableSet.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 // Farm distributes the ERC20 rewards based on staked LP to each user.
@@ -41,7 +42,7 @@ contract Farm is Ownable {
     }
 
     // Address of the ERC20 Token contract.
-    IERC20 public erc20;
+    IPAYR public erc20;
     // The total amount of ERC20 that's paid out as reward.
     uint256 public paidOut = 0;
     // ERC20 tokens rewarded per block.
@@ -63,7 +64,7 @@ contract Farm is Ownable {
     event Withdraw(address indexed user, uint256 indexed pid, uint256 amount);
     event EmergencyWithdraw(address indexed user, uint256 indexed pid, uint256 amount);
 
-    constructor(IERC20 _erc20, uint256 _rewardPerBlock, uint256 _startBlock) public {
+    constructor(IPAYR _erc20, uint256 _rewardPerBlock, uint256 _startBlock) {
         erc20 = _erc20;
         rewardPerBlock = _rewardPerBlock;
         startBlock = _startBlock;
@@ -79,7 +80,7 @@ contract Farm is Ownable {
     function fund(uint256 _amount) public onlyOwner {
         require(block.number < endBlock, "fund: too late, the farm is closed");
 
-        erc20.safeTransferFrom(address(msg.sender), address(this), _amount);
+        erc20.transferFrom(address(msg.sender), address(this), _amount);
         endBlock += _amount.div(rewardPerBlock);
     }
 

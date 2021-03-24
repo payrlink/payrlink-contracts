@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import "./library/SafeMath.sol";
-import "./library/Ownable.sol";
-import "./library/ReentrancyGuard.sol";
 import "./interfaces/IPAYR.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 contract Presale is Ownable, ReentrancyGuard {
     using SafeMath for uint256;
@@ -46,7 +46,7 @@ contract Presale is Ownable, ReentrancyGuard {
 
     /* invest by sending ether to the contract. */
     receive () external payable {
-		if(msg.sender != owner) //do not trigger investment if the multisig wallet is returning the funds
+		if(msg.sender != owner()) //do not trigger investment if the multisig wallet is returning the funds
         	invest();
 		else revert();
     }
@@ -105,13 +105,13 @@ contract Presale is Ownable, ReentrancyGuard {
 	function withdrawETH() public onlyOwner afterClosed {
 		uint256 balance = this.getETHBalance();
 		require(balance > 0, "Balance is zero.");
-		address payable payableOwner = payable(owner);
+		address payable payableOwner = payable(owner());
 		payableOwner.transfer(balance);
 	}
 
 	function withdrawPAYR() public onlyOwner afterClosed{
 		uint256 balance = tokenReward.balanceOf(address(this));
 		require(balance > 0, "Balance is zero.");
-		tokenReward.transfer(owner, balance);
+		tokenReward.transfer(owner(), balance);
 	}
 }
