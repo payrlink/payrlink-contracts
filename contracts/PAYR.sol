@@ -11,8 +11,9 @@ contract PAYR is Ownable, IPAYR {
     mapping (address => mapping (address => uint256)) private _allowances;
 
     uint256 private _totalSupply;
+    uint256 private _maxSupply = 200000000 * (10 ** 18);
 
-    string private _name="PayrLinks";
+    string private _name="PayrLink";
     string private _symbol="PAYR";
 
     /**
@@ -185,8 +186,6 @@ contract PAYR is Ownable, IPAYR {
         require(sender != address(0), "ERC20: transfer from the zero address");
         require(recipient != address(0), "ERC20: transfer to the zero address");
 
-        _beforeTokenTransfer(sender, recipient, amount);
-
         uint256 senderBalance = _balances[sender];
         require(senderBalance >= amount, "ERC20: transfer amount exceeds balance");
         _balances[sender] = senderBalance - amount;
@@ -206,12 +205,16 @@ contract PAYR is Ownable, IPAYR {
      */
     function mint(address account, uint256 amount) public onlyOwner {
         require(account != address(0), "ERC20: mint to the zero address");
+        require(_maxSupply > _totalSupply, "Minting is Finished.");
 
-        _beforeTokenTransfer(address(0), account, amount);
+        uint256 _amount = _maxSupply - _totalSupply;
+        if (_amount > amount) {
+            _amount = amount;
+        }
 
-        _totalSupply += amount;
-        _balances[account] += amount;
-        emit Transfer(address(0), account, amount);
+        _totalSupply += _amount;
+        _balances[account] += _amount;
+        emit Transfer(address(0), account, _amount);
     }
 
     /**
@@ -227,8 +230,6 @@ contract PAYR is Ownable, IPAYR {
      */
     function burn(address account, uint256 amount) public onlyOwner {
         require(account != address(0), "ERC20: burn from the zero address");
-
-        _beforeTokenTransfer(account, address(0), amount);
 
         uint256 accountBalance = _balances[account];
         require(accountBalance >= amount, "ERC20: burn amount exceeds balance");
@@ -258,20 +259,4 @@ contract PAYR is Ownable, IPAYR {
         _allowances[owner][spender] = amount;
         emit Approval(owner, spender, amount);
     }
-
-    /**
-     * @dev Hook that is called before any transfer of tokens. This includes
-     * minting and burning.
-     *
-     * Calling conditions:
-     *
-     * - when `from` and `to` are both non-zero, `amount` of ``from``'s tokens
-     * will be to transferred to `to`.
-     * - when `from` is zero, `amount` tokens will be minted for `to`.
-     * - when `to` is zero, `amount` of ``from``'s tokens will be burned.
-     * - `from` and `to` are never both zero.
-     *
-     * To learn more about hooks, head to xref:ROOT:extending-contracts.adoc#using-hooks[Using Hooks].
-     */
-    function _beforeTokenTransfer(address from, address to, uint256 amount) internal { }
 }
