@@ -14,7 +14,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": "https://github.com/payrlinks/payrlinks-contracts",
-  "author": "Peter Park <peter.park13ak@gmail.com>",
+  "author": "admin@payrlink.com",
   "license": "MIT",
   "dependencies": {
     "@openzeppelin/contracts": "^4.0.0",

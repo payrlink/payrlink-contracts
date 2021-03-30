@@ -17,7 +17,7 @@ module.exports = async function(deployer) {
 
     if (!configs.PAYR) {
       await deployer.deploy(PAYR, {
-        gas: 5000000
+        gas: 4000000
       });
       let payrInstance = await PAYR.deployed();
       dataParse['PAYR'] = PAYR.address;

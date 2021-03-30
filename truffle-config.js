@@ -19,7 +19,7 @@ module.exports = {
         )
       },
       network_id: 1,
-      gas: 5000000,
+      gas: 4000000,
       gasPrice: 200000000000,
       confirmations: 2,
       websockets: true
