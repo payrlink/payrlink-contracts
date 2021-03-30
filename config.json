@@ -1,8 +1,8 @@
 {
     "owner": "0xafec828FF5BD140FfB42a251AD7435155E7b29bd",
-    "mint": "50000000000000000000000000",
+    "mint": "200000000000000000000000000",
     "farm_param": {
-        "rewardPerBlock": "7600000000000000000",
+        "rewardPerBlock": "8200000000000000000",
         "delay": 30,
         "fund": "80000000000000000000000000",
         "lp": [
@@ -11,5 +11,8 @@
                 "allocPoint": 100
             }
         ]
-    }
+    },
+    "Farm": "0x0",
+    "Presale": "0x0",
+    "Crowdsale": "0x0"
 }
