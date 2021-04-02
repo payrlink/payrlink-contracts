@@ -4,7 +4,7 @@
     "farm_param": {
         "rewardPerBlock": "8200000000000000000",
         "delay": 30,
-        "fund": "80000000000000000000000000",
+        "fund": "20000000000000000000000000",
         "lp": [
             {
                 "address": "0x856e90282961c0e7f6693fd2f62b35d5df9783cf",
@@ -12,6 +12,7 @@
             }
         ]
     },
+    "PAYR":"0xC93d74B2CBCCD0995b8214b38E15fCb4bf842220",
     "Farm": "0x0",
     "Presale": "0x0",
     "Crowdsale": "0x0"
