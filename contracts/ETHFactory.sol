@@ -7,8 +7,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "./library/ConvertAddr.sol";
 
-contract ERC20Factory is Ownable {
-    IERC20 token;               // ERC20 Token
+contract ETHFactory is Ownable {
     string public name;         // Factory Name
 
     struct TransactionInfo {
@@ -29,37 +28,34 @@ contract ERC20Factory is Ownable {
 
     /**
         @notice Initialize ERC20 token and Factory name
-        @param _token ERC20 token
         @param _name Factory name
      */
-    constructor(IERC20 _token, string memory _name) {
-        token = _token;
+    constructor(string memory _name) {
         name = _name;
     }
 
     /**
-        @notice Deposit ERC20 token to the contract
-        @param amount ERC20 token amount to deposit
+        @notice Deposit ETH to the contract
      */
-    function deposit(uint256 amount) public {
-        token.transferFrom(msg.sender, address(this), amount);
-        balances[msg.sender] += amount;
+    function deposit() public payable {
+        balances[msg.sender] += msg.value;
     }
 
     /**
-        @notice Withdraw ERC20 token from the contract
-        @param amount ERC20 token amount to withdraw
+        @notice Withdraw ETH from the contract
+        @param amount ETH amount to withdraw
      */
     function withdraw(uint256 amount) public {
         require(balances[msg.sender] >= amount, "Withdraw amount exceed");
-        token.transfer(msg.sender, amount);
+        address payable receipient = payable(msg.sender);
         balances[msg.sender] -= amount;
+        receipient.transfer(amount);
     }
 
     /**
-        @notice Send ERC20 token to a receipient's address(hashed) via Escrow service
+        @notice Send ETH to a receipient's address(hashed) via Escrow service
         @param _toHash Hash of the receipient's address
-        @param _amount ERC20 token amount to send
+        @param _amount ETH amount to send
      */
     function send(bytes32 _toHash, uint256 _amount) public {
         require(balances[msg.sender] >= _amount, "Withdraw amount exceed");
