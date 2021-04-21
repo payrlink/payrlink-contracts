@@ -2,13 +2,13 @@
 
 pragma solidity ^0.8.0;
 
+import "./interfaces/IPayrLink.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "./library/ConvertAddr.sol";
 
 contract ERC20Factory is Ownable {
-    IERC20 token;               // ERC20 Token
+    IERC20 private token;               // ERC20 Token
     string public name;         // Factory Name
 
     struct TransactionInfo {
@@ -27,14 +27,19 @@ contract ERC20Factory is Ownable {
     mapping (address => uint256[]) private pendingFrom;         // Transaction IDs in escrow service from sender's address
     mapping (bytes32 => uint256[]) private pendingTo;            // Transaction IDs in escrow service to receipent's hash
 
+    uint256 public poolId;                      // Pool id on PayrLink
+    IPayrLink payrLink;
+
     /**
         @notice Initialize ERC20 token and Factory name
         @param _token ERC20 token
         @param _name Factory name
+        @param _payrlink Interface of PayrLink
      */
-    constructor(IERC20 _token, string memory _name) {
+    constructor(IERC20 _token, string memory _name, IPayrLink _payrlink) {
         token = _token;
         name = _name;
+        payrLink = _payrlink;
     }
 
     /**
@@ -44,6 +49,14 @@ contract ERC20Factory is Ownable {
     function deposit(uint256 amount) public {
         token.transferFrom(msg.sender, address(this), amount);
         balances[msg.sender] += amount;
+    }
+
+    /**
+        @notice Update pool id of PayrLink
+        @param _pid New pool id
+     */
+    function updatePoolId (uint256 _pid) public onlyOwner {
+        poolId = _pid;
     }
 
     /**
@@ -114,6 +127,9 @@ contract ERC20Factory is Ownable {
         }
 
         uint256 fee = transactions[_id].amount * 8 / 1000;
+        token.transfer(address(payrLink), fee);
+        payrLink.addReward(poolId, fee);
+
         balances[msg.sender] += transactions[_id].amount - fee;
     }
 }

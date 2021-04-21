@@ -2,10 +2,10 @@
 
 pragma solidity ^0.8.0;
 
+import "./interfaces/IPayrLink.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "./library/ConvertAddr.sol";
 
 contract ETHFactory is Ownable {
     string public name;         // Factory Name
@@ -26,12 +26,17 @@ contract ETHFactory is Ownable {
     mapping (address => uint256[]) private pendingFrom;         // Transaction IDs in escrow service from sender's address
     mapping (bytes32 => uint256[]) private pendingTo;            // Transaction IDs in escrow service to receipent's hash
 
+    uint256 public poolId;                      // Pool id on PayrLink
+    IPayrLink payrLink;
+
     /**
         @notice Initialize ERC20 token and Factory name
         @param _name Factory name
+        @param _payrlink Interface of PayrLink
      */
-    constructor(string memory _name) {
+    constructor(string memory _name, IPayrLink _payrlink) {
         name = _name;
+        payrLink = _payrlink;
     }
 
     /**
@@ -39,6 +44,14 @@ contract ETHFactory is Ownable {
      */
     function deposit() public payable {
         balances[msg.sender] += msg.value;
+    }
+
+    /**
+        @notice Update pool id of PayrLink
+        @param _pid New pool id
+     */
+    function updatePoolId (uint256 _pid) public onlyOwner {
+        poolId = _pid;
     }
 
     /**
@@ -110,6 +123,9 @@ contract ETHFactory is Ownable {
         }
 
         uint256 fee = transactions[_id].amount * 8 / 1000;
+        payable(address(payrLink)).transfer(fee);
+        payrLink.addReward(poolId, fee);
+
         balances[msg.sender] += transactions[_id].amount - fee;
     }
 }

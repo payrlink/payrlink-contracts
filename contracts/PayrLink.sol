@@ -3,30 +3,16 @@
 pragma solidity ^0.8.0;
 
 import "./interfaces/IPAYR.sol";
+import "./interfaces/IPayrLink.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract PayrLink is Ownable {
+contract PayrLink is Ownable, IPayrLink {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
-
-    // Info of each user.
-    struct UserInfo {
-        uint256 amount;     // How many PAYR the user has provided.
-        uint256 rewardDebt; // Reward debt. See explanation below.
-    }
-
-    // Info of each pool.
-    struct PoolInfo {
-        IERC20 poolToken;               // Address of ERC20 token contract. ETH is 0x0
-        address factory;                // Address of Factory
-        uint256 totalReward;            // Total reward of the pool
-        uint256 accERC20PerShare;       // Accumulated ERC20s per share, times 1e36.
-        uint256 totalDeposited;         // Total deposited PAYR to the pool
-    }
 
     // Address of the PAYR Token contract.
     IPAYR public payrToken;
@@ -36,16 +22,12 @@ contract PayrLink is Ownable {
     // Info of each user that stakes PAYR.
     mapping (uint256 => mapping (address => UserInfo)) public userInfo;
 
-    event Deposit(address indexed user, uint256 indexed pid, uint256 amount);
-    event Withdraw(address indexed user, uint256 indexed pid, uint256 amount);
-    event EmergencyWithdraw(address indexed user, uint256 indexed pid, uint256 amount);
-
     constructor(IPAYR _payr) {
         payrToken = _payr;
     }
 
     // Number of pools
-    function poolLength() external view returns (uint256) {
+    function poolLength() external view override returns (uint256) {
         return poolInfo.length;
     }
 
@@ -77,20 +59,20 @@ contract PayrLink is Ownable {
     }
 
     // Add rewards to the pool from factory
-    function addReward (uint256 _pid, uint256 _amount) public {
+    function addReward (uint256 _pid, uint256 _amount) public override {
         PoolInfo storage pool = poolInfo[_pid];
         require(msg.sender == pool.factory, "Invalid Factory");
         pool.totalReward += _amount;
     }
 
     // View function to see deposited token for a user.
-    function deposited(uint256 _pid, address _user) external view returns (uint256) {
+    function deposited(uint256 _pid, address _user) external view override returns (uint256) {
         UserInfo storage user = userInfo[_pid][_user];
         return user.amount;
     }
 
     // View function to see pending rewards for a user.
-    function pending(uint256 _pid, address _user) external view returns (uint256) {
+    function pending(uint256 _pid, address _user) external view override returns (uint256) {
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][_user];
         uint256 accERC20PerShare = pool.accERC20PerShare;
@@ -105,7 +87,7 @@ contract PayrLink is Ownable {
     }
 
     // Update reward variables for all pools. Be careful of gas spending!
-    function massUpdatePools() public {
+    function massUpdatePools() public override {
         uint256 length = poolInfo.length;
         for (uint256 pid = 0; pid < length; ++pid) {
             updatePool(pid);
@@ -127,8 +109,8 @@ contract PayrLink is Ownable {
         pool.totalReward = 0;
     }
 
-    // Deposit PAYR to Farm for ERC20 allocation.
-    function deposit(uint256 _pid, uint256 _amount) public {
+    // Deposit PAYR to pool for ERC20 allocation.
+    function deposit(uint256 _pid, uint256 _amount) public override {
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][msg.sender];
         updatePool(_pid);
@@ -144,7 +126,7 @@ contract PayrLink is Ownable {
     }
 
     // Withdraw PAYR tokens from Farm.
-    function withdraw(uint256 _pid, uint256 _amount) public {
+    function withdraw(uint256 _pid, uint256 _amount) public override {
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][msg.sender];
         require(user.amount >= _amount && pool.totalDeposited >= _amount, "withdraw: can't withdraw more than deposit");
@@ -159,7 +141,7 @@ contract PayrLink is Ownable {
     }
 
     // Withdraw without caring about rewards. EMERGENCY ONLY.
-    function emergencyWithdraw(uint256 _pid) public {
+    function emergencyWithdraw(uint256 _pid) public override {
         UserInfo storage user = userInfo[_pid][msg.sender];
         payrToken.transfer(address(msg.sender), user.amount);
         emit EmergencyWithdraw(msg.sender, _pid, user.amount);
