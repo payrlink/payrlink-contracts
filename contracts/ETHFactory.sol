@@ -19,7 +19,7 @@ contract ETHFactory is Ownable {
         uint8 pending;           // Released or pending - 0: pending, 1: available, 2: finished
     }
 
-    TransactionInfo[] private transactions;
+    TransactionInfo[] public transactions;
     uint256 public currentId;
 
     mapping (address => uint256) private balances;              // Available balance which can be withdrawn
@@ -37,6 +37,21 @@ contract ETHFactory is Ownable {
     constructor(string memory _name, IPayrLink _payrlink) {
         name = _name;
         payrLink = _payrlink;
+    }
+
+    /**
+        @notice Get balance of sender
+     */
+    function balanceOf() public view returns(uint256) {
+        return balances[msg.sender];
+    }
+
+    function pendingFromIds() public view returns (uint256[] memory) {
+        return pendingFrom[msg.sender];
+    }
+
+    function pendingToIds(bytes32 _to) public view returns (uint256[] memory) {
+        return pendingTo[_to];
     }
 
     /**
