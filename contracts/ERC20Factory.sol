@@ -5,7 +5,6 @@ pragma solidity ^0.8.0;
 import "./interfaces/IPayrLink.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 contract ERC20Factory is Ownable {
     IERC20 private token;               // ERC20 Token
@@ -105,8 +104,32 @@ contract ERC20Factory is Ownable {
         @param _id Transaction ID
      */
     function release(uint256 _id) public {
-        require(transactions[_id].from == msg.sender, "Invalid owner");
+        require(transactions[_id].from == msg.sender && transactions[_id].pending < 1, "Invalid owner");
         transactions[_id].pending = 1;
+    }
+
+    function removeFromPending(uint256 _id) internal {
+        address sender = transactions[_id].from;
+        bytes32 toHash = transactions[_id].toHash;
+        // Remove transaction id from pendingFrom array
+        uint256 pendingLen = pendingFrom[sender].length;
+        for (uint256 i = 0 ; i < pendingLen ; i ++) {
+            if (pendingFrom[sender][i] == _id) {
+                pendingFrom[sender][i] = pendingFrom[sender][pendingLen - 1];
+                pendingFrom[sender].pop();
+                break;
+            }
+        }
+
+        // Remove transaction id from pendingTo array
+        pendingLen = pendingTo[toHash].length;
+        for (uint256 i = 0 ; i < pendingLen ; i ++) {
+            if (pendingTo[toHash][i] == _id) {
+                pendingTo[toHash][i] = pendingTo[toHash][pendingLen - 1];
+                pendingTo[toHash].pop();
+                break;
+            }
+        }
     }
 
     /**
@@ -121,25 +144,7 @@ contract ERC20Factory is Ownable {
 
         transactions[_id].pending = 2;
 
-        // Remove transaction id from pendingFrom array
-        uint256 pendingLen = pendingFrom[msg.sender].length;
-        for (uint256 i = 0 ; i < pendingLen ; i ++) {
-            if (pendingFrom[msg.sender][i] == _id) {
-                pendingFrom[msg.sender][i] = pendingFrom[msg.sender][pendingLen - 1];
-                pendingFrom[msg.sender].pop();
-                break;
-            }
-        }
-
-        // Remove transaction id from pendingTo array
-        pendingLen = pendingTo[toHash].length;
-        for (uint256 i = 0 ; i < pendingLen ; i ++) {
-            if (pendingTo[toHash][i] == _id) {
-                pendingTo[toHash][i] = pendingTo[toHash][pendingLen - 1];
-                pendingTo[toHash].pop();
-                break;
-            }
-        }
+        removeFromPending(_id);
 
         uint256 fee = transactions[_id].amount * 8 / 1000;
         token.transfer(address(payrLink), fee);
