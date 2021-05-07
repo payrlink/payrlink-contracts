@@ -11,9 +11,9 @@ contract Crowdsale is Ownable, ReentrancyGuard {
     using SafeMath for uint256;
 
 	/* if the funding goal is not reached, investors may withdraw their funds */
-	uint256 public fundingGoal = 2000 * (10**18);
+	uint256 public fundingGoal = 300 * (10**18);
 	/* the maximum amount of tokens to be sold */
-	uint256 public maxGoal = 40000000 * (10**18);
+	uint256 public maxGoal = 26000000 * (10**18);
 	/* how much has been raised by crowdale (in ETH) */
 	uint256 public amountRaised;
 	/* how much has been raised by crowdale (in PAYR) */
@@ -24,8 +24,8 @@ contract Crowdsale is Ownable, ReentrancyGuard {
 	uint256 public deadline;
 
 	/* there are different prices in different time intervals */
-	uint256 public startPrice = 21000;
-	uint256 public endPrice = 19000;
+	uint256 public startPrice = 90133;
+	uint256 public endPrice = 83200;
 
 	/* the address of the token contract */
 	IPAYR private tokenReward;
@@ -78,7 +78,7 @@ contract Crowdsale is Ownable, ReentrancyGuard {
     	uint256 amount = msg.value;
 		require(crowdsaleClosed == false && block.timestamp >= start && block.timestamp < deadline, "Crowdsale is closed");
 		require(msg.value >= 5 * 10**17, "Fund is less than 0.5 ETH");
-		require(msg.value <= 20 * 10**18, "Fund is more than 20 ETH");
+		require(msg.value <= 5 * 10**18, "Fund is more than 5 ETH");
 
 		balanceOf[msg.sender] = balanceOf[msg.sender].add(amount);
 		amountRaised = amountRaised.add(amount);
