@@ -11,9 +11,9 @@ contract Crowdsale is Ownable, ReentrancyGuard {
     using SafeMath for uint256;
 
 	/* if the funding goal is not reached, investors may withdraw their funds */
-	uint256 public fundingGoal = 300 * (10**18);
+	uint256 constant fundingGoal = 300 * (10**18);
 	/* the maximum amount of tokens to be sold */
-	uint256 public maxGoal = 26000000 * (10**18);
+	uint256 constant maxGoal = 26000000 * (10**18);
 	/* how much has been raised by crowdale (in ETH) */
 	uint256 public amountRaised;
 	/* how much has been raised by crowdale (in PAYR) */
@@ -24,8 +24,8 @@ contract Crowdsale is Ownable, ReentrancyGuard {
 	uint256 public deadline;
 
 	/* there are different prices in different time intervals */
-	uint256 public startPrice = 90133;
-	uint256 public endPrice = 83200;
+	uint256 constant startPrice = 90133;
+	uint256 constant endPrice = 83200;
 
 	/* the address of the token contract */
 	IPAYR private tokenReward;
@@ -48,24 +48,24 @@ contract Crowdsale is Ownable, ReentrancyGuard {
 
     /* invest by sending ether to the contract. */
     receive () external payable {
-		if(msg.sender != owner()) //do not trigger investment if the multisig wallet is returning the funds
+		if(msg.sender != owner())
         	invest();
 		else revert();
     }
 
-	function checkFunds(address addr) public view returns (uint256) {
+	function checkFunds(address addr) external view returns (uint256) {
 		return balanceOf[addr];
 	}
 
-	function checkPAYRFunds(address addr) public view returns (uint256) {
+	function checkPAYRFunds(address addr) external view returns (uint256) {
 		return balanceOfPAYR[addr];
 	}
 
-	function getETHBalance() public view returns (uint256) {
+	function getETHBalance() external view returns (uint256) {
 		return address(this).balance;
 	}
 
-	function getCurrentPrice() public view returns (uint256) {
+	function getCurrentPrice() external view returns (uint256) {
 		return startPrice - (startPrice - endPrice) * amountRaised / fundingGoal;
 	}
 
@@ -77,8 +77,8 @@ contract Crowdsale is Ownable, ReentrancyGuard {
     function invest() public payable {
     	uint256 amount = msg.value;
 		require(crowdsaleClosed == false && block.timestamp >= start && block.timestamp < deadline, "Crowdsale is closed");
-		require(msg.value >= 5 * 10**17, "Fund is less than 0.5 ETH");
-		require(msg.value <= 5 * 10**18, "Fund is more than 5 ETH");
+		require(msg.value >= 2 * 10**17, "Fund is less than 0.2 ETH");
+		require(msg.value <= 2 * 10**18, "Fund is more than 2 ETH");
 
 		balanceOf[msg.sender] = balanceOf[msg.sender].add(amount);
 		amountRaised = amountRaised.add(amount);
@@ -100,21 +100,21 @@ contract Crowdsale is Ownable, ReentrancyGuard {
         _;
     }
 
-	function getPAYR() public afterClosed nonReentrant {
+	function getPAYR() external afterClosed nonReentrant {
 		require(balanceOfPAYR[msg.sender] > 0, "Zero ETH contributed.");
 		uint256 amount = balanceOfPAYR[msg.sender];
 		balanceOfPAYR[msg.sender] = 0;
 		tokenReward.transfer(msg.sender, amount);
 	}
 
-	function withdrawETH() public onlyOwner afterClosed {
+	function withdrawETH() external onlyOwner afterClosed {
 		uint256 balance = this.getETHBalance();
 		require(balance > 0, "Balance is zero.");
 		address payable payableOwner = payable(owner());
 		payableOwner.transfer(balance);
 	}
 
-	function withdrawPAYR() public onlyOwner afterClosed{
+	function withdrawPAYR() external onlyOwner afterClosed{
 		uint256 balance = tokenReward.balanceOf(address(this));
 		require(balance > 0, "Balance is zero.");
 		tokenReward.transfer(owner(), balance);
