@@ -78,9 +78,10 @@ contract Crowdsale is Ownable, ReentrancyGuard {
     	uint256 amount = msg.value;
 		require(crowdsaleClosed == false && block.timestamp >= start && block.timestamp < deadline, "Crowdsale is closed");
 		require(msg.value >= 2 * 10**17, "Fund is less than 0.2 ETH");
-		require(msg.value <= 2 * 10**18, "Fund is more than 2 ETH");
 
 		balanceOf[msg.sender] = balanceOf[msg.sender].add(amount);
+		require(balanceOf[msg.sender] <= 2 * 10**18, "Fund is more than 2 ETH");
+		
 		amountRaised = amountRaised.add(amount);
 
 		uint256 price = this.getCurrentPrice();
