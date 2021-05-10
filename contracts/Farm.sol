@@ -79,7 +79,7 @@ contract Farm is Ownable {
     }
 
     // Fund the farm, increase the end block
-    function fund(uint256 _amount) public onlyOwner {
+    function fund(uint256 _amount) external onlyOwner {
         require(block.number < endBlock, "fund: too late, the farm is closed");
 
         erc20.transferFrom(address(msg.sender), address(this), _amount);
@@ -88,7 +88,7 @@ contract Farm is Ownable {
 
     // Add a new lp to the pool. Can only be called by the owner.
     // DO NOT add the same LP token more than once. Rewards will be messed up if you do.
-    function add(uint256 _allocPoint, IERC20 _lpToken, bool _withUpdate) public onlyOwner {
+    function add(uint256 _allocPoint, IERC20 _lpToken, bool _withUpdate) external onlyOwner {
         if (_withUpdate) {
             massUpdatePools();
         }
@@ -103,7 +103,7 @@ contract Farm is Ownable {
     }
 
     // Update the given pool's ERC20 allocation point. Can only be called by the owner.
-    function set(uint256 _pid, uint256 _allocPoint, bool _withUpdate) public onlyOwner {
+    function set(uint256 _pid, uint256 _allocPoint, bool _withUpdate) external onlyOwner {
         if (_withUpdate) {
             massUpdatePools();
         }
@@ -174,7 +174,7 @@ contract Farm is Ownable {
     }
 
     // Deposit LP tokens to Farm for ERC20 allocation.
-    function deposit(uint256 _pid, uint256 _amount) public {
+    function deposit(uint256 _pid, uint256 _amount) external {
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][msg.sender];
         updatePool(_pid);
@@ -189,7 +189,7 @@ contract Farm is Ownable {
     }
 
     // Withdraw LP tokens from Farm.
-    function withdraw(uint256 _pid, uint256 _amount) public {
+    function withdraw(uint256 _pid, uint256 _amount) external {
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][msg.sender];
         require(user.amount >= _amount, "withdraw: can't withdraw more than deposit");
@@ -203,7 +203,7 @@ contract Farm is Ownable {
     }
 
     // Withdraw without caring about rewards. EMERGENCY ONLY.
-    function emergencyWithdraw(uint256 _pid) public {
+    function emergencyWithdraw(uint256 _pid) external {
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][msg.sender];
         pool.lpToken.safeTransfer(address(msg.sender), user.amount);
@@ -219,13 +219,13 @@ contract Farm is Ownable {
     }
 
     // Withdraw ERC20 tokens after end block
-    function erc20Withdraw(IERC20 _erc20, address _to) onlyOwner public {
-        require(block.timestamp >= endBlock, "Farming is not ended yet.");
+    function erc20Withdraw(IERC20 _erc20, address _to) onlyOwner external {
+        require(block.timestamp >= endBlock + 14 days, "Farming is not ended yet.");
         uint256 amount = _erc20.balanceOf(address(this));
         _erc20.transfer(_to, amount);
     }
 
-    function ethWithdraw(address payable _to) onlyOwner public {
+    function ethWithdraw(address payable _to) onlyOwner external {
         uint256 balance = address(this).balance;
         require(block.timestamp >= endBlock, "Farming is not ended yet.");
 		require(balance > 0, "Balance is zero.");

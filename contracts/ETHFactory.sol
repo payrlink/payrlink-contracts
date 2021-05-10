@@ -4,8 +4,9 @@ pragma solidity ^0.8.0;
 
 import "./interfaces/IPayrLink.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-contract ETHFactory is Ownable {
+contract ETHFactory is Ownable, ReentrancyGuard {
     string public name;         // Factory Name
 
     struct TransactionInfo {
@@ -40,22 +41,22 @@ contract ETHFactory is Ownable {
     /**
         @notice Get balance of sender
      */
-    function balanceOf() public view returns(uint256) {
+    function balanceOf() external view returns(uint256) {
         return balances[msg.sender];
     }
 
-    function pendingFromIds() public view returns (uint256[] memory) {
+    function pendingFromIds() external view returns (uint256[] memory) {
         return pendingFrom[msg.sender];
     }
 
-    function pendingToIds(bytes32 _to) public view returns (uint256[] memory) {
+    function pendingToIds(bytes32 _to) external view returns (uint256[] memory) {
         return pendingTo[_to];
     }
 
     /**
         @notice Deposit ETH to the contract
      */
-    function deposit() public payable {
+    function deposit() external payable nonReentrant {
         balances[msg.sender] += msg.value;
     }
 
@@ -63,7 +64,7 @@ contract ETHFactory is Ownable {
         @notice Update pool id of PayrLink
         @param _pid New pool id
      */
-    function updatePoolId (uint256 _pid) public onlyOwner {
+    function updatePoolId (uint256 _pid) external onlyOwner {
         poolId = _pid;
     }
 
@@ -71,7 +72,7 @@ contract ETHFactory is Ownable {
         @notice Withdraw ETH from the contract
         @param amount ETH amount to withdraw
      */
-    function withdraw(uint256 amount) public {
+    function withdraw(uint256 amount) external nonReentrant {
         require(balances[msg.sender] >= amount, "Withdraw amount exceed");
         address payable receipient = payable(msg.sender);
         balances[msg.sender] -= amount;
@@ -83,7 +84,7 @@ contract ETHFactory is Ownable {
         @param _toHash Hash of the receipient's address
         @param _amount ETH amount to send
      */
-    function send(bytes32 _toHash, uint256 _amount) public {
+    function send(bytes32 _toHash, uint256 _amount) external {
         require(balances[msg.sender] >= _amount, "Withdraw amount exceed");
         balances[msg.sender] -= _amount;
 
@@ -98,7 +99,7 @@ contract ETHFactory is Ownable {
         @notice Release the fund of an Escrow transaction, will be called by sender
         @param _id Transaction ID
      */
-    function release(uint256 _id) public {
+    function release(uint256 _id) external {
         require(transactions[_id].from == msg.sender && transactions[_id].pending < 1, "Invalid owner");
         transactions[_id].pending = 1;
     }
@@ -131,7 +132,7 @@ contract ETHFactory is Ownable {
         @notice Get the fund which has been available in Escrow, will be called by receipient
         @param _id Transaction ID
      */
-    function getFund(uint256 _id) public {
+    function getFund(uint256 _id) external {
         bytes32 toHash = keccak256(abi.encodePacked(msg.sender));
 
         require(transactions[_id].toHash == toHash, "Invalid receipient");

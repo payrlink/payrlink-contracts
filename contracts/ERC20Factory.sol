@@ -5,8 +5,9 @@ pragma solidity ^0.8.0;
 import "./interfaces/IPayrLink.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-contract ERC20Factory is Ownable {
+contract ERC20Factory is Ownable, ReentrancyGuard {
     IERC20 private token;               // ERC20 Token
     string public name;         // Factory Name
 
@@ -44,15 +45,15 @@ contract ERC20Factory is Ownable {
     /**
         @notice Get balance of sender
      */
-    function balanceOf() public view returns(uint256) {
+    function balanceOf() external view returns(uint256) {
         return balances[msg.sender];
     }
 
-    function pendingFromIds() public view returns (uint256[] memory) {
+    function pendingFromIds() external view returns (uint256[] memory) {
         return pendingFrom[msg.sender];
     }
 
-    function pendingToIds(bytes32 _to) public view returns (uint256[] memory) {
+    function pendingToIds(bytes32 _to) external view returns (uint256[] memory) {
         return pendingTo[_to];
     }
 
@@ -60,7 +61,7 @@ contract ERC20Factory is Ownable {
         @notice Deposit ERC20 token to the contract
         @param amount ERC20 token amount to deposit
      */
-    function deposit(uint256 amount) public {
+    function deposit(uint256 amount) external nonReentrant {
         token.transferFrom(msg.sender, address(this), amount);
         balances[msg.sender] += amount;
     }
@@ -69,7 +70,7 @@ contract ERC20Factory is Ownable {
         @notice Update pool id of PayrLink
         @param _pid New pool id
      */
-    function updatePoolId (uint256 _pid) public onlyOwner {
+    function updatePoolId (uint256 _pid) external onlyOwner {
         poolId = _pid;
     }
 
@@ -77,7 +78,7 @@ contract ERC20Factory is Ownable {
         @notice Withdraw ERC20 token from the contract
         @param amount ERC20 token amount to withdraw
      */
-    function withdraw(uint256 amount) public {
+    function withdraw(uint256 amount) external nonReentrant {
         require(balances[msg.sender] >= amount, "Withdraw amount exceed");
         token.transfer(msg.sender, amount);
         balances[msg.sender] -= amount;
@@ -88,7 +89,7 @@ contract ERC20Factory is Ownable {
         @param _toHash Hash of the receipient's address
         @param _amount ERC20 token amount to send
      */
-    function send(bytes32 _toHash, uint256 _amount) public {
+    function send(bytes32 _toHash, uint256 _amount) external {
         require(balances[msg.sender] >= _amount, "Withdraw amount exceed");
         balances[msg.sender] -= _amount;
 
@@ -103,7 +104,7 @@ contract ERC20Factory is Ownable {
         @notice Release the fund of an Escrow transaction, will be called by sender
         @param _id Transaction ID
      */
-    function release(uint256 _id) public {
+    function release(uint256 _id) external {
         require(transactions[_id].from == msg.sender && transactions[_id].pending < 1, "Invalid owner");
         transactions[_id].pending = 1;
     }
@@ -136,7 +137,7 @@ contract ERC20Factory is Ownable {
         @notice Get the fund which has been available in Escrow, will be called by receipient
         @param _id Transaction ID
      */
-    function getFund(uint256 _id) public {
+    function getFund(uint256 _id) external {
         bytes32 toHash = keccak256(abi.encodePacked(msg.sender));
 
         require(transactions[_id].toHash == toHash, "Invalid receipient");

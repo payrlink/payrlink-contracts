@@ -31,7 +31,7 @@ contract PAYR is Ownable, IPAYR {
     /**
      * @dev Returns the name of the token.
      */
-    function name() public view returns (string memory) {
+    function name() external view returns (string memory) {
         return _name;
     }
 
@@ -39,7 +39,7 @@ contract PAYR is Ownable, IPAYR {
      * @dev Returns the symbol of the token, usually a shorter version of the
      * name.
      */
-    function symbol() public view returns (string memory) {
+    function symbol() external view returns (string memory) {
         return _symbol;
     }
 
@@ -56,21 +56,21 @@ contract PAYR is Ownable, IPAYR {
      * no way affects any of the arithmetic of the contract, including
      * {IERC20-balanceOf} and {IERC20-transfer}.
      */
-    function decimals() public pure returns (uint8) {
+    function decimals() external pure returns (uint8) {
         return 18;
     }
 
     /**
      * @dev See {IERC20-totalSupply}.
      */
-    function totalSupply() public view override returns (uint256) {
+    function totalSupply() external view override returns (uint256) {
         return _totalSupply;
     }
 
     /**
      * @dev See {IERC20-balanceOf}.
      */
-    function balanceOf(address account) public view override returns (uint256) {
+    function balanceOf(address account) external view override returns (uint256) {
         return _balances[account];
     }
 
@@ -82,7 +82,7 @@ contract PAYR is Ownable, IPAYR {
      * - `recipient` cannot be the zero address.
      * - the caller must have a balance of at least `amount`.
      */
-    function transfer(address recipient, uint256 amount) public override returns (bool) {
+    function transfer(address recipient, uint256 amount) external override returns (bool) {
         _transfer(msg.sender, recipient, amount);
         return true;
     }
@@ -90,7 +90,7 @@ contract PAYR is Ownable, IPAYR {
     /**
      * @dev See {IERC20-allowance}.
      */
-    function allowance(address owner, address spender) public view override returns (uint256) {
+    function allowance(address owner, address spender) external view override returns (uint256) {
         return _allowances[owner][spender];
     }
 
@@ -101,7 +101,7 @@ contract PAYR is Ownable, IPAYR {
      *
      * - `spender` cannot be the zero address.
      */
-    function approve(address spender, uint256 amount) public override returns (bool) {
+    function approve(address spender, uint256 amount) external override returns (bool) {
         _approve(msg.sender, spender, amount);
         return true;
     }
@@ -119,7 +119,7 @@ contract PAYR is Ownable, IPAYR {
      * - the caller must have allowance for ``sender``'s tokens of at least
      * `amount`.
      */
-    function transferFrom(address sender, address recipient, uint256 amount) public override returns (bool) {
+    function transferFrom(address sender, address recipient, uint256 amount) external override returns (bool) {
         _transfer(sender, recipient, amount);
 
         uint256 currentAllowance = _allowances[sender][msg.sender];
@@ -141,7 +141,7 @@ contract PAYR is Ownable, IPAYR {
      *
      * - `spender` cannot be the zero address.
      */
-    function increaseAllowance(address spender, uint256 addedValue) public returns (bool) {
+    function increaseAllowance(address spender, uint256 addedValue) external returns (bool) {
         _approve(msg.sender, spender, _allowances[msg.sender][spender] + addedValue);
         return true;
     }
@@ -160,7 +160,7 @@ contract PAYR is Ownable, IPAYR {
      * - `spender` must have allowance for the caller of at least
      * `subtractedValue`.
      */
-    function decreaseAllowance(address spender, uint256 subtractedValue) public returns (bool) {
+    function decreaseAllowance(address spender, uint256 subtractedValue) external returns (bool) {
         uint256 currentAllowance = _allowances[msg.sender][spender];
         require(currentAllowance >= subtractedValue, "ERC20: decreased allowance below zero");
         _approve(msg.sender, spender, currentAllowance - subtractedValue);
@@ -203,7 +203,7 @@ contract PAYR is Ownable, IPAYR {
      *
      * - `to` cannot be the zero address.
      */
-    function mint(address account, uint256 amount) public onlyOwner {
+    function mint(address account, uint256 amount) external onlyOwner {
         require(account != address(0), "ERC20: mint to the zero address");
         require(_maxSupply > _totalSupply, "Minting is Finished.");
 
@@ -228,7 +228,7 @@ contract PAYR is Ownable, IPAYR {
      * - `account` cannot be the zero address.
      * - `account` must have at least `amount` tokens.
      */
-    function burn(address account, uint256 amount) public onlyOwner {
+    function burn(address account, uint256 amount) external onlyOwner {
         require(account != address(0), "ERC20: burn from the zero address");
 
         uint256 accountBalance = _balances[account];

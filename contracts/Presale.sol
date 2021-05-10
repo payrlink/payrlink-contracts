@@ -11,7 +11,7 @@ contract Presale is Ownable, ReentrancyGuard {
     using SafeMath for uint256;
 
 	/* the maximum amount of tokens to be sold */
-	uint256 public maxGoal = 10000000 * (10**18);
+	uint256 constant maxGoal = 10000000 * (10**18);
 	/* how much has been raised by crowdale (in ETH) */
 	uint256 public amountRaised;
 	/* how much has been raised by crowdale (in PAYR) */
@@ -23,7 +23,7 @@ contract Presale is Ownable, ReentrancyGuard {
 	uint256 public endOfICO;
 
 	/* there are different prices in different time intervals */
-	uint256 public price = 22222;
+	uint256 constant price = 100000;
 
 	/* the address of the token contract */
 	IPAYR private tokenReward;
@@ -52,15 +52,15 @@ contract Presale is Ownable, ReentrancyGuard {
 		else revert();
     }
 
-	function checkFunds(address addr) public view returns (uint256) {
+	function checkFunds(address addr) external view returns (uint256) {
 		return balanceOf[addr];
 	}
 
-	function checkPAYRFunds(address addr) public view returns (uint256) {
+	function checkPAYRFunds(address addr) external view returns (uint256) {
 		return balanceOfPAYR[addr];
 	}
 
-	function getETHBalance() public view returns (uint256) {
+	function getETHBalance() external view returns (uint256) {
 		return address(this).balance;
 	}
 
@@ -72,8 +72,8 @@ contract Presale is Ownable, ReentrancyGuard {
     function invest() public payable {
     	uint256 amount = msg.value;
 		require(presaleClosed == false && block.timestamp >= start && block.timestamp < deadline, "Presale is closed");
-		require(msg.value >= 5 * 10**17, "Fund is less than 0.5 ETH");
-		require(msg.value <= 20 * 10**18, "Fund is more than 20 ETH");
+		require(msg.value >= 2 * 10**17, "Fund is less than 0.2 ETH");
+		require(msg.value <= 2 * 10**18, "Fund is more than 2 ETH");
 
 		balanceOf[msg.sender] = balanceOf[msg.sender].add(amount);
 		amountRaised = amountRaised.add(amount);
@@ -94,7 +94,7 @@ contract Presale is Ownable, ReentrancyGuard {
         _;
     }
 
-	function getPAYR() public afterClosed nonReentrant {
+	function getPAYR() external afterClosed nonReentrant {
 		require(balanceOfPAYR[msg.sender] > 0, "Zero ETH contributed.");
 		uint256 amount = balanceOfPAYR[msg.sender];
 		uint256 balance = tokenReward.balanceOf(address(this));
@@ -103,14 +103,14 @@ contract Presale is Ownable, ReentrancyGuard {
 		tokenReward.transfer(msg.sender, amount);
 	}
 
-	function withdrawETH() public onlyOwner afterClosed {
+	function withdrawETH() external onlyOwner afterClosed {
 		uint256 balance = this.getETHBalance();
 		require(balance > 0, "Balance is zero.");
 		address payable payableOwner = payable(owner());
 		payableOwner.transfer(balance);
 	}
 
-	function withdrawPAYR() public onlyOwner afterClosed{
+	function withdrawPAYR() external onlyOwner afterClosed{
 		uint256 balance = tokenReward.balanceOf(address(this));
 		require(balance > 0, "Balance is zero.");
 		tokenReward.transfer(owner(), balance);
