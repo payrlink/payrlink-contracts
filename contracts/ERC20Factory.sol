@@ -5,9 +5,8 @@ pragma solidity ^0.8.0;
 import "./interfaces/IPayrLink.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-contract ERC20Factory is Ownable, ReentrancyGuard {
+contract ERC20Factory is Ownable {
     IERC20 private token;               // ERC20 Token
     string public name;         // Factory Name
 
@@ -61,7 +60,7 @@ contract ERC20Factory is Ownable, ReentrancyGuard {
         @notice Deposit ERC20 token to the contract
         @param amount ERC20 token amount to deposit
      */
-    function deposit(uint256 amount) external nonReentrant {
+    function deposit(uint256 amount) external {
         token.transferFrom(msg.sender, address(this), amount);
         balances[msg.sender] += amount;
     }
@@ -78,10 +77,10 @@ contract ERC20Factory is Ownable, ReentrancyGuard {
         @notice Withdraw ERC20 token from the contract
         @param amount ERC20 token amount to withdraw
      */
-    function withdraw(uint256 amount) external nonReentrant {
+    function withdraw(uint256 amount) external {
         require(balances[msg.sender] >= amount, "Withdraw amount exceed");
-        token.transfer(msg.sender, amount);
         balances[msg.sender] -= amount;
+        token.transfer(msg.sender, amount);
     }
 
     /**

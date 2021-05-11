@@ -4,9 +4,8 @@ pragma solidity ^0.8.0;
 
 import "./interfaces/IPayrLink.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-contract ETHFactory is Ownable, ReentrancyGuard {
+contract ETHFactory is Ownable {
     string public name;         // Factory Name
 
     struct TransactionInfo {
@@ -56,7 +55,7 @@ contract ETHFactory is Ownable, ReentrancyGuard {
     /**
         @notice Deposit ETH to the contract
      */
-    function deposit() external payable nonReentrant {
+    function deposit() external payable {
         balances[msg.sender] += msg.value;
     }
 
@@ -72,7 +71,7 @@ contract ETHFactory is Ownable, ReentrancyGuard {
         @notice Withdraw ETH from the contract
         @param amount ETH amount to withdraw
      */
-    function withdraw(uint256 amount) external nonReentrant {
+    function withdraw(uint256 amount) external {
         require(balances[msg.sender] >= amount, "Withdraw amount exceed");
         address payable receipient = payable(msg.sender);
         balances[msg.sender] -= amount;
