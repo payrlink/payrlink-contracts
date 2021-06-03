@@ -51,6 +51,11 @@ contract Crowdsale is Ownable, ReentrancyGuard {
 		else revert();
     }
 
+	function updateDeadline(uint256 _dead, uint256 _publish) external onlyOwner {
+		deadline = _dead;
+		publishDate = _publish;
+	}
+
 	function checkFunds(address addr) external view returns (uint256) {
 		return balanceOf[addr];
 	}
