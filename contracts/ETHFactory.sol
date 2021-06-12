@@ -26,6 +26,7 @@ contract ETHFactory is Ownable {
 
     uint256 public poolId;                      // Pool id on PayrLink
     IPayrLink payrLink;
+    uint256 public feePercent = 80;                         // 1 = 0.01 %
 
     /**
         @notice Initialize ERC20 token and Factory name
@@ -50,6 +51,10 @@ contract ETHFactory is Ownable {
 
     function pendingToIds(bytes32 _to) external view returns (uint256[] memory) {
         return pendingTo[_to];
+    }
+
+    function updateFeePercent(uint256 _feePercent) external onlyOwner {
+        feePercent = _feePercent;
     }
 
     /**
@@ -141,7 +146,7 @@ contract ETHFactory is Ownable {
 
         removeFromPending(_id);
 
-        uint256 fee = transactions[_id].amount * 8 / 1000;
+        uint256 fee = transactions[_id].amount * feePercent / 10000;
         payable(address(payrLink)).transfer(fee);
         payrLink.addReward(poolId, fee);
 

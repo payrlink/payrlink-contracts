@@ -41,7 +41,7 @@ module.exports = async function(deployer) {
       });
       dataParse['USDT_FACTORY'] = ERC20Factory.address;
 
-      await payrlinkInstance.addERC20Pool(dataParse['USDT_FACTORY'], true);
+      await payrlinkInstance.addERC20Pool(configs.USDT, dataParse['USDT_FACTORY'], true);
     }
     else {
       dataParse['USDT_FACTORY'] = configs.USDT_FACTORY;
