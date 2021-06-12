@@ -16,7 +16,7 @@ contract ERC20Factory is Ownable {
         bytes32 toHash;          // Hash of recipient's Address
         uint256 amount;         // Transaction amount
         uint256 timestamp;      // Transaction time
-        uint8 pending;           // Released or pending - 0: pending, 1: available, 2: finished
+        uint8 pending;           // Released or pending - 0: pending, 1: available, 2: finished, 3: canceled
     }
 
     TransactionInfo[] public transactions;
@@ -152,4 +152,22 @@ contract ERC20Factory is Ownable {
 
         balances[msg.sender] += transactions[_id].amount - fee;
     }
+
+    /**
+        @notice Get the fund which has been available in Escrow, will be called by receipient
+        @param _id Transaction ID
+     */
+    function cancel(uint256 _id) external {
+        bytes32 toHash = keccak256(abi.encodePacked(msg.sender));
+
+        require(transactions[_id].toHash == toHash, "Invalid receipient");
+        require(transactions[_id].pending == 0, "Funds are not pending");
+
+        transactions[_id].pending = 3;      // canceled
+
+        removeFromPending(_id);
+
+        balances[transactions[_id].from] += transactions[_id].amount;
+    }
+
 }
