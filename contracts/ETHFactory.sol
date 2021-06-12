@@ -14,7 +14,7 @@ contract ETHFactory is Ownable {
         bytes32 toHash;          // Hash of recipient's Address
         uint256 amount;         // Transaction amount
         uint256 timestamp;      // Transaction time
-        uint8 pending;           // Released or pending - 0: pending, 1: available, 2: finished
+        uint8 pending;           // Released or pending - 0: pending, 1: available, 2: finished, 3: Canceled
     }
 
     TransactionInfo[] public transactions;
@@ -26,6 +26,7 @@ contract ETHFactory is Ownable {
 
     uint256 public poolId;                      // Pool id on PayrLink
     IPayrLink payrLink;
+    uint256 public feePercent = 80;                         // 1 = 0.01 %
 
     /**
         @notice Initialize ERC20 token and Factory name
@@ -50,6 +51,10 @@ contract ETHFactory is Ownable {
 
     function pendingToIds(bytes32 _to) external view returns (uint256[] memory) {
         return pendingTo[_to];
+    }
+
+    function updateFeePercent(uint256 _feePercent) external onlyOwner {
+        feePercent = _feePercent;
     }
 
     /**
@@ -141,10 +146,24 @@ contract ETHFactory is Ownable {
 
         removeFromPending(_id);
 
-        uint256 fee = transactions[_id].amount * 8 / 1000;
+        uint256 fee = transactions[_id].amount * feePercent / 10000;
         payable(address(payrLink)).transfer(fee);
         payrLink.addReward(poolId, fee);
 
         balances[msg.sender] += transactions[_id].amount - fee;
     }
+
+    function cancel(uint256 _id) external {
+        bytes32 toHash = keccak256(abi.encodePacked(msg.sender));
+
+        require(transactions[_id].toHash == toHash, "Invalid receipient");
+        require(transactions[_id].pending == 0, "Funds are not pending");
+
+        transactions[_id].pending = 3;      // canceled
+
+        removeFromPending(_id);
+
+        balances[transactions[_id].from] += transactions[_id].amount;
+    }
+
 }
