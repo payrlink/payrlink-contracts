@@ -34,6 +34,8 @@ contract ERC20Factory is Ownable {
     event ReleaseFund(address from, uint256 amount, uint256 timestamp);
     event GetFund(address from, uint256 amount, uint256 timestamp);
     event CancelTransaction(address from, uint256 amount, uint256 timestamp);
+    event Deposit(address from, uint256 amount);
+    event Withdraw(address to, uint256 amount);
 
     /**
         @notice Initialize ERC20 token and Factory name
@@ -73,6 +75,8 @@ contract ERC20Factory is Ownable {
     function deposit(uint256 amount) external {
         token.transferFrom(msg.sender, address(this), amount);
         balances[msg.sender] += amount;
+
+        emit Deposit(msg.sender, amount);
     }
 
     /**
@@ -91,6 +95,8 @@ contract ERC20Factory is Ownable {
         require(balances[msg.sender] >= amount, "Withdraw amount exceed");
         balances[msg.sender] -= amount;
         token.transfer(msg.sender, amount);
+
+        emit Withdraw(msg.sender, amount);
     }
 
     /**

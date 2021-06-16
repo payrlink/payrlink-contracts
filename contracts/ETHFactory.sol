@@ -32,6 +32,8 @@ contract ETHFactory is Ownable {
     event ReleaseFund(address from, uint256 amount, uint256 timestamp);
     event GetFund(address from, uint256 amount, uint256 timestamp);
     event CancelTransaction(address from, uint256 amount, uint256 timestamp);
+    event Deposit(address from, uint256 amount);
+    event Withdraw(address to, uint256 amount);
 
     /**
         @notice Initialize ERC20 token and Factory name
@@ -67,6 +69,7 @@ contract ETHFactory is Ownable {
      */
     function deposit() external payable {
         balances[msg.sender] += msg.value;
+        emit Deposit(msg.sender, msg.value);
     }
 
     /**
@@ -86,6 +89,7 @@ contract ETHFactory is Ownable {
         address payable receipient = payable(msg.sender);
         balances[msg.sender] -= amount;
         receipient.transfer(amount);
+        emit Withdraw(msg.sender, amount);
     }
 
     /**
