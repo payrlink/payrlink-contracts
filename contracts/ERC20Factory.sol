@@ -30,6 +30,11 @@ contract ERC20Factory is Ownable {
     IPayrLink payrLink;
     uint256 public feePercent = 80;                         // 1 = 0.01 %
 
+    event SendTransaction(address from, uint256 amount, uint256 timestamp);
+    event ReleaseFund(address from, uint256 amount, uint256 timestamp);
+    event GetFund(address from, uint256 amount, uint256 timestamp);
+    event CancelTransaction(address from, uint256 amount, uint256 timestamp);
+
     /**
         @notice Initialize ERC20 token and Factory name
         @param _token ERC20 token
@@ -102,6 +107,7 @@ contract ERC20Factory is Ownable {
         pendingTo[_toHash].push(currentId);
 
         currentId ++;
+        emit SendTransaction(msg.sender, _amount, block.timestamp);
     }
 
     /**
@@ -111,6 +117,7 @@ contract ERC20Factory is Ownable {
     function release(uint256 _id) external {
         require(transactions[_id].from == msg.sender && transactions[_id].pending < 1, "Invalid owner");
         transactions[_id].pending = 1;
+        emit ReleaseFund(transactions[_id].from, transactions[_id].amount, transactions[_id].timestamp);
     }
 
     function removeFromPending(uint256 _id) internal {
@@ -156,6 +163,7 @@ contract ERC20Factory is Ownable {
         payrLink.addReward(poolId, fee);
 
         balances[msg.sender] += transactions[_id].amount - fee;
+        emit GetFund(transactions[_id].from, transactions[_id].amount, transactions[_id].timestamp);
     }
 
     /**
@@ -173,6 +181,7 @@ contract ERC20Factory is Ownable {
         removeFromPending(_id);
 
         balances[transactions[_id].from] += transactions[_id].amount;
+        emit CancelTransaction(transactions[_id].from, transactions[_id].amount, transactions[_id].timestamp);
     }
 
 }

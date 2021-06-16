@@ -26,18 +26,18 @@ module.exports = {
     },
     kovan: {
       provider: function() {
-        return new HDWalletProvider(
-          //private keys array
-          process.env.MNEMONIC,
-          //url to ethereum node
-          process.env.WEB3_PROVIDER_ADDRESS
-        )
+        return new HDWalletProvider({
+          mnemonic: process.env.MNEMONIC,
+          providerOrUrl: process.env.WEB3_PROVIDER_ADDRESS,
+          chainId: 42
+        })
       },
       network_id: 42,
       gas: process.env.GAS,
       gasPrice: process.env.GAS_PRICE,
-      confirmations: 2,
-      websockets: true
+      confirmations: 0,
+      websockets: true,
+      skipDryRun: true
     }
   },
   compilers: {
