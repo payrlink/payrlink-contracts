@@ -35,16 +35,16 @@ module.exports = async function(deployer) {
       dataParse['ETH_FACTORY'] = configs.ETH_FACTORY;
     }
 
-    if (!configs.USDT_FACTORY) {
-      await deployer.deploy(ERC20Factory, configs.USDT, "USDT", dataParse['PAYRLINK'], {
+    if (!configs.DAI_FACTORY) {
+      await deployer.deploy(ERC20Factory, configs.DAI, "DAI", dataParse['PAYRLINK'], {
         gas: 5000000
       });
-      dataParse['USDT_FACTORY'] = ERC20Factory.address;
+      dataParse['DAI_FACTORY'] = ERC20Factory.address;
 
-      await payrlinkInstance.addERC20Pool(configs.USDT, dataParse['USDT_FACTORY'], true);
+      await payrlinkInstance.addERC20Pool(configs.DAI, dataParse['DAI_FACTORY'], true);
     }
     else {
-      dataParse['USDT_FACTORY'] = configs.USDT_FACTORY;
+      dataParse['DAI_FACTORY'] = configs.DAI_FACTORY;
     }
 
     const updatedData = JSON.stringify(dataParse);
