@@ -16,7 +16,7 @@ contract ERC20Factory is Ownable {
         bytes32 toHash;          // Hash of recipient's Address
         uint256 amount;         // Transaction amount
         uint256 timestamp;      // Transaction time
-        uint8 pending;           // Released or pending - 0: pending, 1: available, 2: finished, 3: canceled
+        uint8 status;           // Released or pending - 0: pending, 1: available, 2: finished, 3: canceled
     }
 
     TransactionInfo[] public transactions;
@@ -60,8 +60,9 @@ contract ERC20Factory is Ownable {
         return pendingFrom[msg.sender];
     }
 
-    function pendingToIds(bytes32 _to) external view returns (uint256[] memory) {
-        return pendingTo[_to];
+    function pendingToIds() external view returns (uint256[] memory) {
+        bytes32 toHash = keccak256(abi.encodePacked(msg.sender));
+        return pendingTo[toHash];
     }
 
     function updateFeePercent(uint256 _feePercent) external onlyOwner {
@@ -121,8 +122,8 @@ contract ERC20Factory is Ownable {
         @param _id Transaction ID
      */
     function release(uint256 _id) external {
-        require(transactions[_id].from == msg.sender && transactions[_id].pending < 1, "Invalid owner");
-        transactions[_id].pending = 1;
+        require(transactions[_id].from == msg.sender && transactions[_id].status < 1, "Invalid owner");
+        transactions[_id].status = 1;
         emit ReleaseFund(transactions[_id].from, transactions[_id].amount, transactions[_id].timestamp);
     }
 
@@ -158,9 +159,9 @@ contract ERC20Factory is Ownable {
         bytes32 toHash = keccak256(abi.encodePacked(msg.sender));
 
         require(transactions[_id].toHash == toHash, "Invalid receipient");
-        require(transactions[_id].pending == 1, "Funds are not released");
+        require(transactions[_id].status == 1, "Funds are not released");
 
-        transactions[_id].pending = 2;
+        transactions[_id].status = 2;
 
         removeFromPending(_id);
 
@@ -180,9 +181,9 @@ contract ERC20Factory is Ownable {
         bytes32 toHash = keccak256(abi.encodePacked(msg.sender));
 
         require(transactions[_id].toHash == toHash, "Invalid receipient");
-        require(transactions[_id].pending == 0, "Funds are not pending");
+        require(transactions[_id].status == 0, "Funds are not pending");
 
-        transactions[_id].pending = 3;      // canceled
+        transactions[_id].status = 3;      // canceled
 
         removeFromPending(_id);
 
