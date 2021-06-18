@@ -12,11 +12,12 @@ contract ERC20Factory is Ownable {
 
     struct TransactionInfo {
         uint256 id;             // Transaction ID
-        address from;           // Address Which has sent
-        bytes32 toHash;          // Hash of recipient's Address
         uint256 amount;         // Transaction amount
         uint256 timestamp;      // Transaction time
-        uint8 status;           // Released or pending - 0: pending, 1: available, 2: finished, 3: canceled
+        uint256 status;           // Released or pending - 0: pending, 1: available, 2: finished, 3: canceled
+        address from;           // Address Which has sent
+        bytes32 toHash;          // Hash of recipient's Address
+        string description;     // Description
     }
 
     TransactionInfo[] public transactions;
@@ -105,11 +106,11 @@ contract ERC20Factory is Ownable {
         @param _toHash Hash of the receipient's address
         @param _amount ERC20 token amount to send
      */
-    function send(bytes32 _toHash, uint256 _amount) external {
+    function send(bytes32 _toHash, uint256 _amount, string memory _desc) external {
         require(balances[msg.sender] >= _amount, "Withdraw amount exceed");
         balances[msg.sender] -= _amount;
 
-        transactions.push(TransactionInfo(currentId, msg.sender, _toHash, _amount, block.timestamp, 0));
+        transactions.push(TransactionInfo(currentId, _amount, block.timestamp, 0, msg.sender, _toHash, _desc));
         pendingFrom[msg.sender].push(currentId);
         pendingTo[_toHash].push(currentId);
 
