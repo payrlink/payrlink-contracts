@@ -11,7 +11,8 @@ contract ETHFactory is Ownable {
     struct TransactionInfo {
         uint256 id;             // Transaction ID
         uint256 amount;         // Transaction amount
-        uint256 timestamp;      // Transaction time
+        uint256 createdAt;      // created time of transaction
+        uint256 endedAt;        // released or canceled time of transaction
         uint256 status;           // Released or pending - 0: pending, 1: available, 2: finished, 3: Canceled
         address from;           // Address Which has sent
         bytes32 toHash;          // Hash of recipient's Address
@@ -29,10 +30,7 @@ contract ETHFactory is Ownable {
     IPayrLink payrLink;
     uint256 public feePercent = 80;                         // 1 = 0.01 %
 
-    event SendTransaction(address from, uint256 amount, uint256 timestamp);
-    event ReleaseFund(address from, uint256 amount, uint256 timestamp);
-    event GetFund(address from, uint256 amount, uint256 timestamp);
-    event CancelTransaction(address from, uint256 amount, uint256 timestamp);
+    event SendTransaction(uint256 id, address from, bytes32 toHash);
     event Deposit(address from, uint256 amount);
     event Withdraw(address to, uint256 amount);
 
@@ -103,12 +101,13 @@ contract ETHFactory is Ownable {
         require(balances[msg.sender] >= _amount, "Withdraw amount exceed");
         balances[msg.sender] -= _amount;
 
-        transactions.push(TransactionInfo(currentId, _amount, block.timestamp, 0, msg.sender, _toHash, _desc));
+        transactions.push(TransactionInfo(currentId, _amount, block.timestamp, 0, 0, msg.sender, _toHash, _desc));
         pendingFrom[msg.sender].push(currentId);
         pendingTo[_toHash].push(currentId);
 
+        emit SendTransaction(currentId, msg.sender, _toHash);
+
         currentId ++;
-        emit SendTransaction(msg.sender, _amount, block.timestamp);
     }
 
     /**
@@ -118,7 +117,7 @@ contract ETHFactory is Ownable {
     function release(uint256 _id) external {
         require(transactions[_id].from == msg.sender && transactions[_id].status < 1, "Invalid owner");
         transactions[_id].status = 1;
-        emit ReleaseFund(transactions[_id].from, transactions[_id].amount, transactions[_id].timestamp);
+        transactions[_id].endedAt = block.timestamp;
     }
 
     function removeFromPending(uint256 _id) internal {
@@ -164,8 +163,6 @@ contract ETHFactory is Ownable {
         payrLink.addReward(poolId, fee);
 
         balances[msg.sender] += transactions[_id].amount - fee;
-
-        emit GetFund(transactions[_id].from, transactions[_id].amount, transactions[_id].timestamp);
     }
 
     function cancel(uint256 _id) external {
@@ -175,12 +172,11 @@ contract ETHFactory is Ownable {
         require(transactions[_id].status == 0, "Funds are not pending");
 
         transactions[_id].status = 3;      // canceled
+        transactions[_id].endedAt = block.timestamp;
 
         removeFromPending(_id);
 
         balances[transactions[_id].from] += transactions[_id].amount;
-
-        emit CancelTransaction(transactions[_id].from, transactions[_id].amount, transactions[_id].timestamp);
     }
 
 }
