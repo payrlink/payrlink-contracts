@@ -13,9 +13,9 @@
             }
         ]
     },
-    "PAYR":"0xC93d74B2CBCCD0995b8214b38E15fCb4bf842220",
+    "PAYR":"0x6587B4304Ab73e63F407C0D7AFB74334F6ff94B2",
     "Farm": "0x0",
     "Presale": "0x0",
     "Crowdsale": "0x572076d3e7E57562a5318E44Fd8E0Acb62DEe106",
-    "USDT": "0xdac17f958d2ee523a2206206994597c13d831ec7"
+    "DAI": "0x4f96fe3b7a6cf9725f59d353f723c1bdb64ca6aa"
 }
