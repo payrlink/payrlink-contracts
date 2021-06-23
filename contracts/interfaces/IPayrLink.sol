@@ -2,6 +2,7 @@
 
 pragma solidity ^0.8.0;
 
+import "./IFactory.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 interface IPayrLink {
@@ -13,11 +14,11 @@ interface IPayrLink {
 
     // Info of each pool.
     struct PoolInfo {
-        IERC20 poolToken;               // Address of ERC20 token contract. ETH is 0x0
-        address factory;                // Address of Factory
         uint256 totalReward;            // Total reward of the pool
         uint256 accERC20PerShare;       // Accumulated ERC20s per share, times 1e36.
         uint256 totalDeposited;         // Total deposited PAYR to the pool
+        uint256 revenue;                // Total Revenue of the pool
+        IFactory factory;                // Address of Factory
     }
 
     event Deposit(address indexed user, uint256 indexed pid, uint256 amount);

@@ -27,9 +27,11 @@ module.exports = async function(deployer) {
       await deployer.deploy(ETHFactory, "ETH", dataParse['PAYRLINK'], {
         gas: 5000000
       });
+      let ethfactoryInstance = await ETHFactory.deployed();
       dataParse['ETH_FACTORY'] = ETHFactory.address;
 
-      await payrlinkInstance.addEthPool(dataParse['ETH_FACTORY'], true);
+      await payrlinkInstance.addPool(dataParse['ETH_FACTORY'], true);
+      await ethfactoryInstance.updatePoolId(0);
     }
     else {
       dataParse['ETH_FACTORY'] = configs.ETH_FACTORY;
@@ -39,9 +41,11 @@ module.exports = async function(deployer) {
       await deployer.deploy(ERC20Factory, configs.DAI, "DAI", dataParse['PAYRLINK'], {
         gas: 5000000
       });
+      let erc20factoryInstance = await ERC20Factory.deployed();
       dataParse['DAI_FACTORY'] = ERC20Factory.address;
 
-      await payrlinkInstance.addERC20Pool(configs.DAI, dataParse['DAI_FACTORY'], true);
+      await payrlinkInstance.addPool(dataParse['DAI_FACTORY'], true);
+      await erc20factoryInstance.updatePoolId(1);
     }
     else {
       dataParse['DAI_FACTORY'] = configs.DAI_FACTORY;

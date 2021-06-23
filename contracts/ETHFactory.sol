@@ -3,21 +3,11 @@
 pragma solidity ^0.8.0;
 
 import "./interfaces/IPayrLink.sol";
+import "./interfaces/IFactory.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract ETHFactory is Ownable {
+contract ETHFactory is Ownable, IFactory {
     string public name;         // Factory Name
-
-    struct TransactionInfo {
-        uint256 id;             // Transaction ID
-        uint256 amount;         // Transaction amount
-        uint256 createdAt;      // created time of transaction
-        uint256 endedAt;        // released or canceled time of transaction
-        uint256 status;           // Released or pending - 0: pending, 1: available, 2: finished, 3: Canceled
-        address from;           // Address Which has sent
-        bytes32 toHash;          // Hash of recipient's Address
-        string description;     // Description
-    }
 
     TransactionInfo[] public transactions;
     uint256 public currentId;
@@ -159,12 +149,15 @@ contract ETHFactory is Ownable {
         removeFromPending(_id);
 
         uint256 fee = transactions[_id].amount * feePercent / 10000;
-        payable(address(payrLink)).transfer(fee);
         payrLink.addReward(poolId, fee);
 
         balances[msg.sender] += transactions[_id].amount - fee;
     }
 
+    /**
+        @notice Cancel the escrow transaction
+        @param _id Transaction ID
+     */
     function cancel(uint256 _id) external {
         bytes32 toHash = keccak256(abi.encodePacked(msg.sender));
 
@@ -179,4 +172,13 @@ contract ETHFactory is Ownable {
         balances[transactions[_id].from] += transactions[_id].amount;
     }
 
+    /**
+        @notice Get stacking reward from the pool
+        @param _to address to harvest
+        @param _pending pending fee amount
+     */
+    function harvestFee(address _to, uint256 _pending) external override {
+        require(msg.sender == address(payrLink), "must be payrlink");
+        balances[_to] += _pending;
+    }
 }
