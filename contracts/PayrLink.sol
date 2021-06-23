@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 
 import "./interfaces/IPAYR.sol";
 import "./interfaces/IPayrLink.sol";
+import "./interfaces/IFactory.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
@@ -32,38 +33,27 @@ contract PayrLink is Ownable, IPayrLink, ReentrancyGuard {
         return poolInfo.length;
     }
 
-    function addEthPool(address _factory, bool _withUpdate) external onlyOwner {
-        if (_withUpdate) {
-            massUpdatePools();
-        }
-        poolInfo.push(PoolInfo({
-            poolToken: IERC20(address(0x0)),
-            factory: _factory,
-            totalReward: 0,
-            accERC20PerShare: 0,
-            totalDeposited: 0
-        }));
-    }
-
     // Add a new ERC20 token pool. Can only be called by the owner.
-    function addERC20Pool(IERC20 _poolToken, address _factory, bool _withUpdate) external onlyOwner {
+    function addPool(IFactory _factory, bool _withUpdate) external onlyOwner returns (uint256 _id) {
         if (_withUpdate) {
             massUpdatePools();
         }
+        _id = poolInfo.length;
         poolInfo.push(PoolInfo({
-            poolToken: _poolToken,
-            factory: _factory,
             totalReward: 0,
             accERC20PerShare: 0,
-            totalDeposited: 0
+            totalDeposited: 0,
+            revenue: 0,
+            factory: _factory
         }));
     }
 
     // Add rewards to the pool from factory
     function addReward (uint256 _pid, uint256 _amount) external override {
         PoolInfo storage pool = poolInfo[_pid];
-        require(msg.sender == pool.factory, "Invalid Factory");
+        require(msg.sender == address(pool.factory), "Invalid Factory");
         pool.totalReward += _amount;
+        pool.revenue += _amount;
     }
 
     // View function to see deposited token for a user.
@@ -117,7 +107,7 @@ contract PayrLink is Ownable, IPayrLink, ReentrancyGuard {
         updatePool(_pid);
         if (user.amount > 0) {
             uint256 pendingAmount = user.amount.mul(pool.accERC20PerShare).div(1e36).sub(user.rewardDebt);
-            erc20Transfer(pool.poolToken, msg.sender, pendingAmount);
+            pool.factory.harvestFee(msg.sender, pendingAmount);
         }
         payrToken.transferFrom(address(msg.sender), address(this), _amount);
         pool.totalDeposited += _amount;
@@ -133,7 +123,7 @@ contract PayrLink is Ownable, IPayrLink, ReentrancyGuard {
         require(user.amount >= _amount && pool.totalDeposited >= _amount, "withdraw: can't withdraw more than deposit");
         updatePool(_pid);
         uint256 pendingAmount = user.amount.mul(pool.accERC20PerShare).div(1e36).sub(user.rewardDebt);
-        erc20Transfer(pool.poolToken, msg.sender, pendingAmount);
+        pool.factory.harvestFee(msg.sender, pendingAmount);
         user.amount = user.amount.sub(_amount);
         user.rewardDebt = user.amount.mul(pool.accERC20PerShare).div(1e36);
         payrToken.transfer(address(msg.sender), _amount);
@@ -148,16 +138,5 @@ contract PayrLink is Ownable, IPayrLink, ReentrancyGuard {
         emit EmergencyWithdraw(msg.sender, _pid, user.amount);
         user.amount = 0;
         user.rewardDebt = 0;
-    }
-
-    // Transfer ERC20 and update the required ERC20 to payout all rewards
-    function erc20Transfer(IERC20 _erc20, address _to, uint256 _amount) internal {
-        if (address(_erc20) == address(0x0)) {
-            address payable to = payable(_to);
-            to.transfer(_amount);
-        }
-        else {
-            _erc20.transfer(_to, _amount);
-        }
     }
 }
