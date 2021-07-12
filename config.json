@@ -3,9 +3,9 @@
     "mint": "20000000000000000000000000",
     "lpExist": false,
     "farm_param": {
-        "rewardPerBlock": "8200000000000000000",
+        "rewardPerBlock": "1000000000000000000",
         "delay": 30,
-        "fund": "20000000000000000000000000",
+        "fund": "10000000000000000000000000",
         "lp": [
             {
                 "address": "0x856e90282961c0e7f6693fd2f62b35d5df9783cf",
@@ -13,9 +13,11 @@
             }
         ]
     },
-    "PAYR":"0x6587B4304Ab73e63F407C0D7AFB74334F6ff94B2",
-    "Farm": "0x0",
+    "PAYR":"0xc93d74b2cbccd0995b8214b38e15fcb4bf842220",
     "Presale": "0x0",
     "Crowdsale": "0x572076d3e7E57562a5318E44Fd8E0Acb62DEe106",
+    "PAYRLINK": "0x0",
+    "ETH_FACTORY": "0x0",
+    "DAI_FACTORY": "0x0",
     "DAI": "0x4f96fe3b7a6cf9725f59d353f723c1bdb64ca6aa"
 }

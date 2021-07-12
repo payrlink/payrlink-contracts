@@ -22,6 +22,7 @@ contract Farm is Ownable {
     struct UserInfo {
         uint256 amount;     // How many LP tokens the user has provided.
         uint256 rewardDebt; // Reward debt. See explanation below.
+        uint256 timestamp;
         //
         // We do some fancy math here. Basically, any point in time, the amount of ERC20s
         // entitled to a user but is pending to be distributed is:
@@ -183,6 +184,7 @@ contract Farm is Ownable {
             erc20Transfer(msg.sender, pendingAmount);
         }
         pool.lpToken.safeTransferFrom(address(msg.sender), address(this), _amount);
+        user.timestamp = block.timestamp;
         user.amount = user.amount.add(_amount);
         user.rewardDebt = user.amount.mul(pool.accERC20PerShare).div(1e36);
         emit Deposit(msg.sender, _pid, _amount);
@@ -193,6 +195,7 @@ contract Farm is Ownable {
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][msg.sender];
         require(user.amount >= _amount, "withdraw: can't withdraw more than deposit");
+        require(block.timestamp - user.timestamp >= 7776000, "can't withdraw within 90 days");
         updatePool(_pid);
         uint256 pendingAmount = user.amount.mul(pool.accERC20PerShare).div(1e36).sub(user.rewardDebt);
         erc20Transfer(msg.sender, pendingAmount);
